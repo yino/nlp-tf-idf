@@ -4,6 +4,11 @@
 tfidf
 余弦短文本求相似
 
+#### package
+gensim
+jieba
+pandas
+
 #### 软件架构
 软件架构说明
 
