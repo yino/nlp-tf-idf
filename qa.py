@@ -225,11 +225,7 @@ class Qa:
         return res_data
 
 if __name__ == '__main__':
-    # Qa = Qa()
-    # Qa.save_model(questionList=[], file="test")
-    # exit()
-    # print(Qa.check(question="交通费用", dir="8", file="28"))
-    # exit()
+    # 示例
     base_data = [
         "教职工离职办理",
         "教师如何办理离职手续",
