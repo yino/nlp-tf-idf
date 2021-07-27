@@ -1,0 +1,5 @@
+/venv
+/.idea
+/build
+/dist
+/nlp_tfidf.egg-info
