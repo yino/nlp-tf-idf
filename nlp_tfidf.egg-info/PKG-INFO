@@ -1,0 +1,34 @@
+Metadata-Version: 2.1
+Name: nlp-tfidf
+Version: 1.0
+Summary: UNKNOWN
+Home-page: https://github.com/yino/nlp-tf-idf
+Author: yino
+Author-email: m15829090357@163.com
+License: MIT
+Keywords: nlp-qa
+Platform: UNKNOWN
+License-File: LICENSE
+
+# nlp-qa-tfidf
+
+#### 介绍
+tfidf
+余弦短文本求相似度
+
+#### package
+gensim
+jieba
+pandas
+
+
+#### 安装教程
+
+1.  pip install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt 
+
+#### 使用说明
+
+1.  运行qa文件
+2.  questionList 可替换
+
+
