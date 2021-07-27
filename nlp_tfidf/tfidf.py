@@ -10,7 +10,7 @@ import pandas as pd
 from gensim import corpora, models, similarities
 
 
-class Qa:
+class Tfidf:
     MAX_INDEX_NUM = 10  # 获取最多多少条相似度数据
     DIFFERENCE_SIMS_NUM = 0.1  # 最小的 相似值 >0.1
 
@@ -236,7 +236,7 @@ if __name__ == '__main__':
         "学生怎么处理教职工关系。。。"
     ]
 
-    Qa = Qa()
-    # Qa.save_model(question_list=base_data, answer_list=base_data)
-    res = Qa.run(question="教职工离职")
-    print(res)
+    Tfidf = Tfidf()
+    Tfidf.save_model(question_list=base_data, answer_list=base_data)
+    # res = Tfidf.run(question="教职工离职")
+    # print(res)

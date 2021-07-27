@@ -1,14 +1,22 @@
 Metadata-Version: 2.1
 Name: nlp-tfidf
-Version: 1.0
-Summary: UNKNOWN
+Version: 1.3
+Summary: My short description for my project.
 Home-page: https://github.com/yino/nlp-tf-idf
 Author: yino
 Author-email: m15829090357@163.com
 License: MIT
-Keywords: nlp-qa
 Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.0
+Description-Content-Type: text/markdown
 License-File: LICENSE
+
 
 # nlp-qa-tfidf
 
