@@ -18,7 +18,7 @@ URL = 'https://github.com/yino/nlp-tf-idf'
 EMAIL = 'm15829090357@163.com'
 AUTHOR = 'yino'
 REQUIRES_PYTHON = '>=3.0'
-VERSION = '1.5'
+VERSION = '1.5.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [

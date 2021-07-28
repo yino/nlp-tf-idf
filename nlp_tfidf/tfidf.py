@@ -20,7 +20,7 @@ class Tfidf:
     work_dir="", 
     work_file_prefix=""
 
-    def __init__(self, stopwords_file="", work_dir="", work_file_prefix=""):
+    def __init__(self, stopwords_file="", work_dir="", work_file_prefix="",MAX_INDEX_NUM=10,DIFFERENCE_SIMS_NUM=0.1):
         if (stopwords_file != '') or len(stopwords_file) == 0:
             self.stopwords_file = './stopwordList/stopword.txt'
             self.load_stop_words()
@@ -32,7 +32,8 @@ class Tfidf:
             work_file_prefix=''
         self.work_dir = work_dir
         self.work_file_prefix = work_file_prefix
-            
+        self.MAX_INDEX_NUM = MAX_INDEX_NUM
+        self.DIFFERENCE_SIMS_NUM = DIFFERENCE_SIMS_NUM
     # load stop_words
     def load_stop_words(self):
         with open(self.stopwords_file, mode="r", encoding="utf-8") as f:
