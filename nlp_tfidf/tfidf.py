@@ -9,6 +9,8 @@ import jieba
 import pandas as pd
 from gensim import corpora, models, similarities
 
+import stop_word
+
 
 class Tfidf:
     MAX_INDEX_NUM = 10  # 获取最多多少条相似度数据
@@ -21,10 +23,10 @@ class Tfidf:
     work_file_prefix=""
 
     def __init__(self, stopwords_file="", work_dir="", work_file_prefix="",MAX_INDEX_NUM=10,DIFFERENCE_SIMS_NUM=0.1):
-        if (stopwords_file != '') or len(stopwords_file) == 0:
-            self.stopwords_file = './stopwordList/stopword.txt'
-            self.load_stop_words()
-    
+        self.stopwords_file = stopwords_file
+        # load stop words
+        self.load_stop_words()
+
         if (work_dir != '') or len(work_dir) == 0:
             work_dir='.'
 
@@ -34,12 +36,18 @@ class Tfidf:
         self.work_file_prefix = work_file_prefix
         self.MAX_INDEX_NUM = MAX_INDEX_NUM
         self.DIFFERENCE_SIMS_NUM = DIFFERENCE_SIMS_NUM
+        
     # load stop_words
     def load_stop_words(self):
+        if (self.stopwords_file == '') or len(self.stopwords_file) == 0:
+            self.stopWordsList = stop_word.stop_word_arr
+            return
+
         with open(self.stopwords_file, mode="r", encoding="utf-8") as f:
             content = f.read()
 
         content_list = content.split('\n')
+        print(content_list)
         self.stopWordsList = content_list
 
     # delete stop words
@@ -69,51 +77,40 @@ class Tfidf:
             "教职工怎么办理离职？",
         ]
         """
-        dirname, file = str(self.work_dir), str(self.work_file_prefix)
-        base_data = question_list
-        # create dir
-        # self.create_dir(dirpath='./dictionary_file/%s' % (dirname,))
-        # save question id
-        self.save_answer(answer_list=answer_list,
-                              filepath='%s/%s_answer.json' % (dirname, file))
-        # save question
-        self.save_question(question_list=question_list,
-                           filepath='%s/%s_question.json' % (dirname, file))
-        # 1.将base_data中的数据进行遍历后分词
+        try:
+            dirname, file = str(self.work_dir), str(self.work_file_prefix)
+            base_data = question_list
+            self.save_answer(answer_list=answer_list,
+                                filepath='%s/%s_answer.json' % (dirname, file))
+            # save question
+            self.save_question(question_list=question_list,
+                            filepath='%s/%s_question.json' % (dirname, file))
+            # 1.将base_data中的数据进行遍历后分词
+            base_items = []
+            for item in base_data:
 
-        base_items = []
-        for item in base_data:
-
-            # base_items.append(self.cut_words(item))
-            # cut words and delete stop words
-            base_items.append(self.delete_stop_words(self.cut_words(item)))
-        # 2.生成词典
-        dictionary = corpora.Dictionary(base_items)
-        dictionary.save('%s/%s.dict' % (dirname, file,))
-        # 获取 key 对应 key
-        # for key in dictionary.iterkeys():
-        #     print(dictionary[key], key)
-        # exit()
-        # 通过doc2bow稀疏向量生成语料库
-        corpus = [dictionary.doc2bow(item) for item in base_items]
-
-        # for item in base_items:
-        #     print(dictionary.doc2bow(item)) [(0, 1), (1, 1), (2, 1)]
-        #     print(type(dictionary.doc2bow(item))) list
-        #     exit()
-        # corpus = [dictionary.doc2bow(item) for item in base_items]
-        # for item in base_items:
-        #     print(dictionary.doc2bow(item))
-
-        # 4.通过TF模型算法，计算出tf值
-        # 生成model文件以便下次直接加载model
-        tf = models.TfidfModel(corpus)
-        tf.save('%s/%s.model' % (dirname, file,))
-        # 5.通过token2id得到特征数（字典里面的键的个数）
-        num_features = len(dictionary.token2id.keys())
-        # 6.计算稀疏矩阵相似度，建立一个索引
-        index = similarities.MatrixSimilarity(tf[corpus], num_features=num_features)
-        index.save('%s/%s.index' % (dirname, file,))
+                # base_items.append(self.cut_words(item))
+                # cut words and delete stop words
+                base_items.append(self.delete_stop_words(self.cut_words(item)))
+            # 2.生成词典
+            dictionary = corpora.Dictionary(base_items)
+            dictionary.save('%s/%s.dict' % (dirname, file,))
+            # 通过doc2bow稀疏向量生成语料库
+            corpus = [dictionary.doc2bow(item) for item in base_items]
+            # 4.通过TF模型算法，计算出tf值
+            # 生成model文件以便下次直接加载model
+            tf = models.TfidfModel(corpus)
+            tf.save('%s/%s.model' % (dirname, file,))
+            # 5.通过token2id得到特征数（字典里面的键的个数）
+            num_features = len(dictionary.token2id.keys())
+            # 6.计算稀疏矩阵相似度，建立一个索引
+            index = similarities.MatrixSimilarity(tf[corpus], num_features=num_features)
+            index.save('%s/%s.index' % (dirname, file,))
+            return True
+        except BaseException as e:
+            print("save model fail", e)
+            return False
+        
 
     def save_answer(self, answer_list, filepath):
         answer_list = json.dumps(answer_list)
@@ -166,13 +163,12 @@ class Tfidf:
         dir = self.work_dir
         file = self.work_file_prefix
         # load stop words
-        self.load_stop_words()
+        # self.load_stop_words()
         # cut words
         words_list = self.cut_words(question)
         # delete stop words
         question = self.delete_stop_words(words_list)
         file = '%s/%s' % ( dir, file)
-        print(file)
         # 获取词典
         dictionary = self.load_dictionary(file=file)
         
@@ -187,22 +183,25 @@ class Tfidf:
 
         # 9.算出相似度
         sims = index[tf[new_vec]]
+        # 加载问题库和 答案
         answer_list = self.load_answer(file=file)
-        
+        question_list = self.load_question(file=file)
         # 获取最大的10个元素
         question_index_list = heapq.nlargest(10, range(len(sims)), sims.take)
         # 获取相似度
         answer_ret_list = []
         question_sims_list = []
+        question_ret_list= []
         # question_sims_list = [sims[index] for index in question_index_list]
         for index in question_index_list:
             question_sims_list.append(sims[index])
             answer_ret_list.append(answer_list[index])
-
+            question_ret_list.append(question_list[index])
         del question_index_list
         data = {
             'answer_list': answer_ret_list,
-            'sims': question_sims_list
+            'sims': question_sims_list,
+            'question_list': question_ret_list 
         }
         df = pd.DataFrame(data)
 
@@ -220,7 +219,8 @@ class Tfidf:
             for index, val in df[0:last_row_index + 1].iterrows():
                 res_data.append({
                     'answer': val['answer_list'],
-                    'sims': float(val['sims'])
+                    'sims': float(val['sims']),
+                    'question': val['question_list']
                 })
 
         return res_data
@@ -237,7 +237,7 @@ if __name__ == '__main__':
         "学生怎么处理教职工关系。。。"
     ]
 
-    Tfidf = Tfidf()
-    Tfidf.save_model(question_list=base_data, answer_list=base_data)
+    # Tfidf = Tfidf()
+    # Tfidf.save_model(question_list=base_data, answer_list=base_data)
     # res = Tfidf.run(question="教职工离职")
     # print(res)
