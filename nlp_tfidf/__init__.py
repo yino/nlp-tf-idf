@@ -1,3 +1,3 @@
 from .tfidf import Tfidf
 
-__version__ = "1.0"
+__version__ = "1.5.5"
