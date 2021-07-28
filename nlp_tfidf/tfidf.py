@@ -9,7 +9,7 @@ import jieba
 import pandas as pd
 from gensim import corpora, models, similarities
 
-import stop_word
+from . import stop_word
 
 
 class Tfidf:
@@ -23,20 +23,22 @@ class Tfidf:
     work_file_prefix=""
 
     def __init__(self, stopwords_file="", work_dir="", work_file_prefix="",MAX_INDEX_NUM=10,DIFFERENCE_SIMS_NUM=0.1):
+        work_file_prefix = str(work_file_prefix)
+        work_dir = str(work_dir)
         self.stopwords_file = stopwords_file
         # load stop words
         self.load_stop_words()
 
-        if (work_dir != '') or len(work_dir) == 0:
+        if (work_dir == '') or len(work_dir) == 0:
             work_dir='.'
 
-        if (work_file_prefix != '') or len(work_file_prefix) == 0:
+        if (work_file_prefix == '') or len(work_file_prefix) == 0:
             work_file_prefix=''
         self.work_dir = work_dir
         self.work_file_prefix = work_file_prefix
         self.MAX_INDEX_NUM = MAX_INDEX_NUM
         self.DIFFERENCE_SIMS_NUM = DIFFERENCE_SIMS_NUM
-        
+        self.create_dir(dirpath=work_dir)
     # load stop_words
     def load_stop_words(self):
         if (self.stopwords_file == '') or len(self.stopwords_file) == 0:
@@ -79,6 +81,7 @@ class Tfidf:
         """
         try:
             dirname, file = str(self.work_dir), str(self.work_file_prefix)
+            print('%s/%s_answer.json' % (dirname, file))
             base_data = question_list
             self.save_answer(answer_list=answer_list,
                                 filepath='%s/%s_answer.json' % (dirname, file))
@@ -151,7 +154,7 @@ class Tfidf:
     # create save dir
     def create_dir(self, dirpath):
         if os.path.isdir(dirpath) == False:
-            os.mkdir(dirpath, 777)
+            os.makedirs(dirpath)
     # run
     def run(self, question):
         """
