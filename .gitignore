@@ -3,3 +3,4 @@
 /build
 /dist
 /nlp_tfidf.egg-info
+!/nlp_tfidf
