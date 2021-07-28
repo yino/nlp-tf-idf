@@ -1,3 +1,3 @@
-from .tfidf import Qa
+from .tfidf import Tfidf
 
 __version__ = "1.0"
