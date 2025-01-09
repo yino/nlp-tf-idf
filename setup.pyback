@@ -7,7 +7,7 @@ import setuptools
 
 setuptools.setup(
     name='nlp_tfidf',
-    version='1.2',
+    version='1.3',
     keywords='nlp-qa',
     description='',
     long_description=open(
