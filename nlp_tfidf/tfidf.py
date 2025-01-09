@@ -275,12 +275,17 @@ class Tfidf:
        
         # 将文本转换为TF-IDF向量
         vec1 = tfidf[matchQueCorpu]
-   
         # 计算余弦相似度
         index = similarities.MatrixSimilarity(corpus_tfidf, num_features=len(dictionary))
         sims = index[vec1]
-        similarity = sims[1]  # 第二个元素是第二个文本的相似度
-        print("余弦相似度:", sims)
+        result = []
+        for i, sim in enumerate(sims):
+            result.append({
+                "index": i,
+                "sims": sim,
+                "text": originQuestions[i]
+            })
+        return result
 
     # 预处理文本
     def preprocess(self, question):
