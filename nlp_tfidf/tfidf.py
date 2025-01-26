@@ -8,6 +8,7 @@ warnings.filterwarnings('ignore')
 import jieba
 import pandas as pd
 from gensim import corpora, models, similarities
+from gensim.utils import simple_preprocess
 
 from . import stop_word
 
@@ -106,6 +107,7 @@ class Tfidf:
             tf.save('%s/%s.model' % (dirname, file,))
             # 5.通过token2id得到特征数（字典里面的键的个数）
             num_features = len(dictionary.token2id.keys())
+            print("num_features",num_features)
             # 6.计算稀疏矩阵相似度，建立一个索引
             index = similarities.MatrixSimilarity(tf[corpus], num_features=num_features)
             index.save('%s/%s.index' % (dirname, file,))
@@ -228,6 +230,68 @@ class Tfidf:
 
         return res_data
 
+    # 快速比对文本
+    def quickRun(self, originQuestions = [], matchQuestion = ""):
+        if len(originQuestions) == 0 or len(matchQuestion) == 0:
+            return []
+        one2one = False
+        if len(originQuestions) == 1:
+            originQuestions.append(matchQuestion)
+            one2one = True
+        texts = [self.preprocess(text) for text in originQuestions]
+        # 构建词典和语料库
+        dictionary = corpora.Dictionary(texts)
+        corpus = [dictionary.doc2bow(text) for text in texts]
+
+        # 过滤完全相等的向量
+        # 避免doc 文本 为 1 时无法进行检索
+        cut_words = self.preprocess(matchQuestion)
+        if len(cut_words) == 0:
+            return []
+        matchQueCorpu = dictionary.doc2bow(cut_words)
+        index = 0
+        if one2one:
+            if corpus[0] == corpus[1]:
+                return [{
+                    "index": index,
+                    "sims": 1,
+                    "text": originQuestions[index]
+                }]
+        else :
+            for corpu in corpus:
+                if corpu == matchQueCorpu:
+                    return [{
+                        "index": index,
+                        "sims": 1,
+                        "text": originQuestions[index]
+                    }]
+                index += 1
+        if len(dictionary) == 0 or len(corpus) == 0:
+            return []
+        
+        # 使用TF-IDF模型
+        tfidf = models.TfidfModel(corpus)
+        corpus_tfidf = tfidf[corpus]
+       
+        # 将文本转换为TF-IDF向量
+        vec1 = tfidf[matchQueCorpu]
+        # 计算余弦相似度
+        index = similarities.MatrixSimilarity(corpus_tfidf, num_features=len(dictionary))
+        sims = index[vec1]
+        result = []
+        for i, sim in enumerate(sims):
+            result.append({
+                "index": i,
+                "sims": sim,
+                "text": originQuestions[i]
+            })
+        return result
+
+    # 预处理文本
+    def preprocess(self, question):
+        return self.delete_stop_words(self.cut_words(question))
+
+
 if __name__ == '__main__':
     # 示例
     base_data = [
@@ -241,6 +305,8 @@ if __name__ == '__main__':
     ]
 
     # Tfidf = Tfidf()
-    # Tfidf.save_model(question_list=base_data, answer_list=base_data)
-    # res = Tfidf.run(question="教职工离职")
+    Tfidf.save_model(question_list=base_data, answer_list=base_data)
+    res = Tfidf.run(question=="教职工离职")
+
+    # res = Tfidf.quickRun(originQuestions = base_data, matchQuestion="教职工离职")
     # print(res)
