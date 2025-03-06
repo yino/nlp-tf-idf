@@ -5,5 +5,5 @@ release:
 	python3 setup.py upload
 
 pipy:
-	python3 setup.py sdist bdist_wheel && twine upload --repository-url https://upload.pypi.org/legacy/ dist/* -u __token__ -p
+	python3 setup.py sdist bdist_wheel && twine upload --repository-url https://upload.pypi.org/legacy/ dist/* -u __token__
 
