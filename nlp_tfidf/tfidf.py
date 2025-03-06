@@ -10,7 +10,7 @@ import pandas as pd
 from gensim import corpora, models, similarities
 from gensim.utils import simple_preprocess
 
-import stop_word
+from . import stop_word
 
 
 class Tfidf:
