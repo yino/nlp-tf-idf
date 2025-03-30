@@ -234,58 +234,29 @@ class Tfidf:
     def quickRun(self, originQuestions = [], matchQuestion = ""):
         if len(originQuestions) == 0 or len(matchQuestion) == 0:
             return []
-        one2one = False
-        if len(originQuestions) == 1:
-            originQuestions.append(matchQuestion)
-            one2one = True
+
+        # 预处理文本
         texts = [self.preprocess(text) for text in originQuestions]
+        matchQueCorpu = self.preprocess(matchQuestion)
+
         # 构建词典和语料库
         dictionary = corpora.Dictionary(texts)
         corpus = [dictionary.doc2bow(text) for text in texts]
 
-        # 过滤完全相等的向量
-        # 避免doc 文本 为 1 时无法进行检索
-        cut_words = self.preprocess(matchQuestion)
-        if len(cut_words) == 0:
-            return []
-        matchQueCorpu = dictionary.doc2bow(cut_words)
-        index = 0
-        if one2one:
-            if corpus[0] == corpus[1]:
-                return [{
-                    "index": index,
-                    "sims": 1,
-                    "text": originQuestions[index]
-                }]
-        else :
-            for corpu in corpus:
-                if corpu == matchQueCorpu:
-                    return [{
-                        "index": index,
-                        "sims": 1,
-                        "text": originQuestions[index]
-                    }]
-                index += 1
-        if len(dictionary) == 0 or len(corpus) == 0:
-            return []
-        
         # 使用TF-IDF模型
         tfidf = models.TfidfModel(corpus)
         corpus_tfidf = tfidf[corpus]
-       
-        # 将文本转换为TF-IDF向量
-        vec1 = tfidf[matchQueCorpu]
+        vec1 = tfidf[dictionary.doc2bow(matchQueCorpu)]
+
         # 计算余弦相似度
         index = similarities.MatrixSimilarity(corpus_tfidf, num_features=len(dictionary))
         sims = index[vec1]
-        result = []
-        for i, sim in enumerate(sims):
-            result.append({
-                "index": i,
-                "sims": sim,
-                "text": originQuestions[i]
-            })
-        return result
+
+        # 对结果进行排序和过滤
+        results = sorted([(i, sim) for i, sim in enumerate(sims)], key=lambda x: x[1], reverse=True)
+        filtered_results = [result for result in results if result[1] > self.DIFFERENCE_SIMS_NUM]
+
+        return [{"index": index, "sims": sim, "text": originQuestions[index]} for index, sim in filtered_results]
 
     # 预处理文本
     def preprocess(self, question):
@@ -295,18 +266,12 @@ class Tfidf:
 if __name__ == '__main__':
     # 示例
     base_data = [
-        "教职工离职办理",
-        "教师如何办理离职手续",
-        "教师离职手续怎么办？",
-        "教职工的离职手续办理？",
-        "教职工办理离职手续？",
-        "教职工怎么办理离职？",
-        "学生怎么处理教职工关系。。。"
+        "若X线片显示其远端骨折线与两髂嵴连线的夹角（Pauwells角）为60°，说明此骨折属于; 内收型骨折",
     ]
 
-    # Tfidf = Tfidf()
-    Tfidf.save_model(question_list=base_data, answer_list=base_data)
-    res = Tfidf.run(question=="教职工离职")
+    Tfidf = Tfidf()
+    # Tfidf.save_model(question_list=base_data, answer_list=base_data)
+    # res = Tfidf.run(question=="教职工离职")
 
-    # res = Tfidf.quickRun(originQuestions = base_data, matchQuestion="教职工离职")
-    # print(res)
+    res = Tfidf.quickRun(originQuestions = base_data, matchQuestion="该病人受伤的原因是")
+    print(res)
